@@ -1,0 +1,59 @@
+# YOLO共享内存通信系统配置文件
+# 这个文件存放所有可调整的参数，修改这里不需要改代码
+
+# ========== 数据源配置 ==========
+data_source:
+  # 数据源类型: video(视频文件), camera(摄像头), images(图片文件夹)
+  type: "video"
+  
+  # 视频文件路径（当 type="video" 时使用）
+  video_path: "/mnt/f/Deeplearning/yolo_source8.3.163/ultralytics/datasets/make_dataset/videos/result.mp4"
+  
+  # 摄像头索引（当 type="camera" 时使用，0表示第一个摄像头）
+  camera_index: 0
+  
+  # 图片文件夹路径（当 type="images" 时使用）
+  images_dir: "/mnt/f/Deeplearning/yolo_source8.3.163/ultralytics/datasets/make_dataset/images"
+  
+  # 发送频率（Hz）：每秒发送多少帧图像
+  fps: 24
+
+# ========== 共享内存配置 ==========
+shared_memory:
+  # 共享内存名称：程序A和程序B通过这个名称找到同一块内存
+  name: "yolo_image_shm"
+  
+  # 最大图像尺寸：共享内存需要预先分配固定大小
+  max_width: 1920    # 最大宽度（像素）
+  max_height: 1080   # 最大高度（像素）
+  max_channels: 3    # 通道数（RGB图像是3通道）
+
+# ========== 推理配置 ==========
+inference:
+  # YOLO模型文件路径
+  model_path: "yolov8n.pt"
+  
+  # 推理频率（Hz）：每秒处理多少帧（建议和data_source.fps一致）
+  fps: 24
+  
+  # 置信度阈值：只有置信度大于这个值的检测结果才保留（0.0-1.0）
+  conf_threshold: 0.3
+  
+  # IoU阈值：用于非极大值抑制（NMS），去除重复框（0.0-1.0）
+  iou_threshold: 0.5
+  
+  # 检测类别：COCO数据集类别ID列表
+  # 0=person(人), 1=bicycle(自行车), 2=car(汽车), 3=motorcycle(摩托车) 等
+  # 空列表 [] 表示检测所有类别
+  classes: [0]  # 只检测"人"这个类别
+
+# ========== 日志配置 ==========
+logging:
+  # 日志级别: DEBUG(详细), INFO(信息), WARNING(警告), ERROR(错误)
+  level: "INFO"
+  
+  # 日志文件路径（None表示不保存到文件，只输出到控制台）
+  file: "logs/app.log"
+  
+  # 是否输出到控制台
+  console: true
