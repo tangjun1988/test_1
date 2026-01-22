@@ -1,5 +1,5 @@
 """
-程序B：推理引擎（使用共享内存版本）
+程序B：推理引擎（使用共享内存版本）.
 
 这个程序的作用：
 1. 从共享内存读取图像数据（由程序A写入）
@@ -15,18 +15,22 @@
 - 程序B负责从共享内存读取数据并进行推理
 - 两个程序通过共享内存名称（SHM_NAME）连接
 """
+
 # ========== 导入必要的库 ==========
-import cv2          # OpenCV，用于显示图像和处理图像
-import time         # 时间库，用于控制推理频率
-import numpy as np  # NumPy，用于处理图像数组
-import struct       # 结构体库，用于将字节转换为整数
+import struct  # 结构体库，用于将字节转换为整数
+import time  # 时间库，用于控制推理频率
 from multiprocessing import shared_memory  # 共享内存库，用于读取共享内存
+
+import cv2  # OpenCV，用于显示图像和处理图像
+import numpy as np  # NumPy，用于处理图像数组
+
 from ultralytics import YOLO  # YOLO模型库，用于目标检测
 
 # ========== 导入配置和日志模块 ==========
 try:
     from config_loader import Config
     from logger_setup import setup_logger
+
     USE_CONFIG = True
 except ImportError:
     # 如果导入失败，使用默认配置（向后兼容）
@@ -42,23 +46,23 @@ if USE_CONFIG:
         config = Config("config.yaml")
         logger = setup_logger(
             name="inference",
-            log_level=config.logging.get('level', 'INFO'),
-            log_file=config.logging.get('file'),
-            console=config.logging.get('console', True)
+            log_level=config.logging.get("level", "INFO"),
+            log_file=config.logging.get("file"),
+            console=config.logging.get("console", True),
         )
         logger.info("成功加载配置文件")
-        
+
         # 从配置文件读取参数
-        SHM_NAME = config.shared_memory.get('name', 'yolo_image_shm')
-        MAX_WIDTH = config.shared_memory.get('max_width', 1920)
-        MAX_HEIGHT = config.shared_memory.get('max_height', 1080)
-        MAX_CHANNELS = config.shared_memory.get('max_channels', 3)
-        
-        MODEL_PATH = config.inference.get('model_path', 'yolov8n.pt')
-        FPS = config.inference.get('fps', 10)
-        CONF_THRESHOLD = config.inference.get('conf_threshold', 0.3)
-        IOU_THRESHOLD = config.inference.get('iou_threshold', 0.5)
-        CLASSES = config.inference.get('classes', [0])  # 默认只检测人
+        SHM_NAME = config.shared_memory.get("name", "yolo_image_shm")
+        MAX_WIDTH = config.shared_memory.get("max_width", 1920)
+        MAX_HEIGHT = config.shared_memory.get("max_height", 1080)
+        MAX_CHANNELS = config.shared_memory.get("max_channels", 3)
+
+        MODEL_PATH = config.inference.get("model_path", "yolov8n.pt")
+        FPS = config.inference.get("fps", 10)
+        CONF_THRESHOLD = config.inference.get("conf_threshold", 0.3)
+        IOU_THRESHOLD = config.inference.get("iou_threshold", 0.5)
+        CLASSES = config.inference.get("classes", [0])  # 默认只检测人
     except Exception as e:
         print(f"警告：加载配置失败，使用默认配置: {e}")
         USE_CONFIG = False
@@ -71,11 +75,17 @@ if not USE_CONFIG:
     except:
         # 如果日志模块也失败，使用print
         class SimpleLogger:
-            def info(self, msg): print(f"[INFO] {msg}")
-            def warning(self, msg): print(f"[WARNING] {msg}")
-            def error(self, msg): print(f"[ERROR] {msg}")
+            def info(self, msg):
+                print(f"[INFO] {msg}")
+
+            def warning(self, msg):
+                print(f"[WARNING] {msg}")
+
+            def error(self, msg):
+                print(f"[ERROR] {msg}")
+
         logger = SimpleLogger()
-    
+
     # 默认配置（保持原有代码）
     SHM_NAME = "yolo_image_shm"
     MAX_WIDTH = 1920
@@ -96,17 +106,16 @@ SHM_TOTAL_SIZE = SHM_META_SIZE + SHM_DATA_SIZE
 
 
 def read_frame_from_shm(shm, debug=False):
-    """
-    从共享内存读取一帧图像
-    
+    """从共享内存读取一帧图像.
+
     参数：
         shm: 共享内存对象
         debug: 是否打印调试信息
-    
+
     返回：
         numpy数组：图像数据，形状为 (高度, 宽度, 通道数)
         None：如果读取失败或数据无效
-    
+
     共享内存布局（和程序A写入的格式一致）：
         [0-3字节]   宽度 (width)，4字节整数
         [4-7字节]   高度 (height)，4字节整数
@@ -116,30 +125,30 @@ def read_frame_from_shm(shm, debug=False):
     # ========== 将共享内存转换为numpy数组 ==========
     # 这样可以直接用numpy的方式读取数据
     shm_array = np.ndarray((SHM_TOTAL_SIZE,), dtype=np.uint8, buffer=shm.buf)
-    
+
     # ========== 读取元数据（图像尺寸信息）==========
     # struct.unpack("I", ...) 将4字节的二进制数据转换为整数
     # "I" 表示无符号整数（uint32）
     # tobytes() 将numpy数组转换为字节
-    w = struct.unpack("I", shm_array[0:4].tobytes())[0]   # 读取宽度
-    h = struct.unpack("I", shm_array[4:8].tobytes())[0]   # 读取高度
+    w = struct.unpack("I", shm_array[0:4].tobytes())[0]  # 读取宽度
+    h = struct.unpack("I", shm_array[4:8].tobytes())[0]  # 读取高度
     c = struct.unpack("I", shm_array[8:12].tobytes())[0]  # 读取通道数
-    
+
     # 打印调试信息（如果需要）
-    #if debug:
+    # if debug:
     #    print(f"调试：读取到的尺寸 w={w}, h={h}, c={c}")
-    
+
     # ========== 检查尺寸是否有效 ==========
     # 如果尺寸为0或超出限制，说明数据无效
     if w == 0 or h == 0 or c == 0 or w > MAX_WIDTH or h > MAX_HEIGHT:
         if debug:
-            print(f"调试：尺寸无效，返回 None")
+            print("调试：尺寸无效，返回 None")
         return None
-    
+
     # ========== 读取图像数据 ==========
     data_start = SHM_META_SIZE  # 数据开始位置：12字节（元数据之后）
     data_end = data_start + w * h * c  # 数据结束位置：开始位置 + 图像大小
-    
+
     # ========== 将一维数组重塑为图像形状 ==========
     try:
         # reshape((h, w, c)) 将一维数组重新排列成三维数组
@@ -155,9 +164,8 @@ def read_frame_from_shm(shm, debug=False):
 
 
 def main():
-    """
-    主函数：程序的入口点
-    
+    """主函数：程序的入口点.
+
     工作流程：
     1. 加载YOLO模型
     2. 连接到共享内存（等待程序A创建）
@@ -186,7 +194,7 @@ def main():
     logger.info(f"正在连接共享内存 {SHM_NAME}...")
     max_retries = 10  # 最多重试10次
     retry_count = 0
-    
+
     # 循环尝试连接共享内存（因为程序A可能还没启动）
     while retry_count < max_retries:
         try:
@@ -212,7 +220,7 @@ def main():
 
     # ========== 初始化变量 ==========
     last_frame = None  # 保存上一帧图像（如果读取失败，显示上一帧）
-    frame_count = 0    # 计数器：已推理的帧数
+    frame_count = 0  # 计数器：已推理的帧数
     interval = 1.0 / FPS  # 每次循环的间隔时间（秒）
     no_frame_count = 0  # 统计连续未收到帧的次数
 
@@ -223,7 +231,7 @@ def main():
         while True:
             # 从共享内存读取图像（前3次失败时打印调试信息）
             frame = read_frame_from_shm(shm, debug=(no_frame_count < 3))
-            
+
             if frame is None:
                 # ========== 读取失败的处理 ==========
                 no_frame_count += 1
@@ -234,7 +242,7 @@ def main():
                     logger.warning("   2. 视频文件路径是否正确？")
                 elif no_frame_count % 30 == 0:  # 每30次（约3秒）提示一次
                     logger.warning(f"仍在等待图像数据... (已等待 {no_frame_count} 次)")
-                
+
                 # 如果没有收到新帧，使用上一帧（维持画面，避免黑屏）
                 if last_frame is None:
                     # 如果连上一帧都没有，等待后继续
@@ -252,11 +260,11 @@ def main():
             # ========== YOLO推理 ==========
             # model.predict() 对图像进行目标检测
             results = model.predict(
-                frame,                    # 输入图像
-                conf=CONF_THRESHOLD,      # 置信度阈值
-                iou=IOU_THRESHOLD,        # IoU阈值：用于非极大值抑制（NMS）
+                frame,  # 输入图像
+                conf=CONF_THRESHOLD,  # 置信度阈值
+                iou=IOU_THRESHOLD,  # IoU阈值：用于非极大值抑制（NMS）
                 classes=CLASSES if CLASSES else None,  # 检测类别（空列表表示所有类别）
-                verbose=False,            # 不打印详细信息
+                verbose=False,  # 不打印详细信息
             )
 
             # ========== 绘制检测结果 ==========
@@ -269,7 +277,7 @@ def main():
             # 窗口标题使用英文避免乱码
             cv2.imshow("YOLO Real-time Inference (Shared Memory)", annotated)
             frame_count += 1  # 推理成功，计数器+1
-            
+
             # 每3秒打印一次进度（FPS * 3 = 30帧）
             if frame_count % (FPS * 3) == 0:
                 logger.info(f"已推理帧数: {frame_count}, 图像尺寸: {annotated.shape}")
@@ -292,18 +300,19 @@ def main():
         # 发生其他错误
         logger.error(f"❌ 推理过程中发生错误: {e}")
         import traceback
+
         logger.error(traceback.format_exc())  # 记录详细的错误信息
     finally:
         # ========== 清理资源 ==========
         # finally 块中的代码无论是否出错都会执行
         logger.info("\n正在清理资源...")
-        
+
         try:
             shm.close()  # 关闭共享内存连接
             logger.info("✅ 共享内存连接已关闭")
         except Exception as e:
             logger.warning(f"关闭共享内存连接时出错: {e}")
-        
+
         # 尝试删除共享内存（如果程序A已经退出，或者这是最后一个连接）
         try:
             shm.unlink()  # 删除共享内存
@@ -311,15 +320,15 @@ def main():
         except FileNotFoundError:
             # 共享内存已经被程序A删除，这是正常的
             pass
-        except Exception as e:
+        except Exception:
             # 其他错误（比如程序A还在使用），忽略
             pass
-        
+
         try:
             cv2.destroyAllWindows()  # 关闭所有OpenCV窗口
         except:
             pass
-        
+
         logger.info("程序 B 已退出。")
 
 
@@ -327,4 +336,3 @@ def main():
 # 当直接运行这个文件时（而不是被其他文件导入），执行main()函数
 if __name__ == "__main__":
     main()
-
