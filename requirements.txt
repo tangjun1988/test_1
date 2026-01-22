@@ -1,0 +1,18 @@
+# YOLO共享内存通信系统依赖包
+# 安装方法: pip install -r requirements.txt
+
+# 计算机视觉库
+opencv-python>=4.8.0
+
+# 数值计算库
+numpy>=1.24.0
+
+# YOLO模型库
+ultralytics>=8.0.0
+
+# YAML配置文件解析
+pyyaml>=6.0
+
+# GPU支持（可选，但推荐用于Jetson Orin）
+# pycuda>=2021.1  # GPU显存操作（Jetson平台推荐）
+# 安装方法: pip install pycuda

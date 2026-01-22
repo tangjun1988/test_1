@@ -21,11 +21,13 @@ data_source:
 # ========== 共享内存配置 ==========
 shared_memory:
   # 共享内存名称：程序A和程序B通过这个名称找到同一块内存
-  name: "yolo_image_shm"
+  # CPU版本使用: "yolo_image_shm"
+  # GPU版本使用: "yolo_image_gpu_shm"
+  name: "yolo_image_gpu_shm"
   
   # 最大图像尺寸：共享内存需要预先分配固定大小
-  max_width: 1920    # 最大宽度（像素）
-  max_height: 1080   # 最大高度（像素）
+  max_width: 640    # 最大宽度（像素）- 已改为640×480以支持6个摄像头
+  max_height: 480   # 最大高度（像素）- 已改为640×480以支持6个摄像头
   max_channels: 3    # 通道数（RGB图像是3通道）
 
 # ========== 推理配置 ==========
