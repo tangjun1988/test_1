@@ -13,23 +13,23 @@ mkdir -p config
 
 # 检查配置文件是否存在
 if [ ! -f "config.yaml" ]; then
-    echo "⚠️  警告：配置文件 config.yaml 不存在！"
-    echo "将使用代码中的默认配置"
+  echo "⚠️  警告：配置文件 config.yaml 不存在！"
+  echo "将使用代码中的默认配置"
 else
-    echo "✅ 配置文件存在"
+  echo "✅ 配置文件存在"
 fi
 
 # 检查Python是否安装
 if ! command -v python3 &> /dev/null; then
-    echo "❌ 错误：未找到 python3，请先安装Python"
-    exit 1
+  echo "❌ 错误：未找到 python3，请先安装Python"
+  exit 1
 fi
 
 # 检查必要的Python模块
 echo "检查Python依赖..."
-python3 -c "import cv2, numpy, yaml" 2>/dev/null
+python3 -c "import cv2, numpy, yaml" 2> /dev/null
 if [ $? -ne 0 ]; then
-    echo "⚠️  警告：缺少必要的Python模块，请运行: pip install -r requirements.txt"
+  echo "⚠️  警告：缺少必要的Python模块，请运行: pip install -r requirements.txt"
 fi
 
 # 启动数据源程序（后台运行）
