@@ -5,6 +5,7 @@
 ### 1. 确认 WSL2 和 Ubuntu 已安装
 
 在 Windows PowerShell 中运行：
+
 ```powershell
 wsl --list --verbose
 ```
@@ -12,6 +13,7 @@ wsl --list --verbose
 应该能看到 Ubuntu，并且 VERSION 是 2。
 
 如果没安装，运行：
+
 ```powershell
 wsl --install -d Ubuntu
 ```
@@ -44,6 +46,7 @@ pip3 install ultralytics opencv-python
 ```
 
 **注意**：如果提示权限问题，可以加 `--user`：
+
 ```bash
 pip3 install --user ultralytics opencv-python
 ```
@@ -55,6 +58,7 @@ pip3 install --user ultralytics opencv-python
 ### 2.1 在 WSL2 中访问 Windows 文件
 
 你的 Windows 文件在 WSL2 中的路径是：
+
 - `F:\` 盘 → `/mnt/f/`
 - 你的项目路径：
   ```
@@ -74,12 +78,14 @@ ls -la
 ```
 
 应该能看到：
+
 - `data_source.py`
 - `inference.py`
 
 ### 2.4 确认视频文件路径
 
 检查视频文件是否存在：
+
 ```bash
 ls -la /mnt/f/Deeplearning/yolo_source8.3.163/ultralytics/datasets/make_dataset/videos/
 ```
@@ -93,6 +99,7 @@ ls -la /mnt/f/Deeplearning/yolo_source8.3.163/ultralytics/datasets/make_dataset/
 ### 3.1 打开两个 WSL2 终端窗口
 
 需要两个终端窗口：
+
 1. **终端1**：运行 `inference.py`（程序B - 推理）
 2. **终端2**：运行 `data_source.py`（程序A - 数据源）
 
@@ -107,6 +114,7 @@ python3 inference.py
 ```
 
 **预期输出**：
+
 ```
 ============================================================
 程序 B：推理进程（负责从 Socket 读取图像并做实时检测）
@@ -137,6 +145,7 @@ python3 data_source.py
 ```
 
 **预期输出**：
+
 ```
 ============================================================
 程序 A：数据源进程（负责读取视频/图片/摄像头，并发送给程序 B）
@@ -157,6 +166,7 @@ Unix Domain Socket 路径: /tmp/yolo_image_socket
 ### 3.4 查看结果
 
 当程序A连接成功后，程序B的窗口会：
+
 1. 显示"已连接程序 A，开始接收图像并推理。"
 2. 弹出一个 OpenCV 窗口，显示检测结果（画框标注人体）
 3. 在终端中显示"已推理帧数: X"
@@ -166,9 +176,11 @@ Unix Domain Socket 路径: /tmp/yolo_image_socket
 ## 🛑 停止程序
 
 ### 方法1：关闭显示窗口
+
 在 OpenCV 显示窗口中按键盘 `q` 键，程序B会退出。
 
 ### 方法2：使用 Ctrl+C
+
 在任意一个终端中按 `Ctrl + C`，对应的程序会停止。
 
 **建议**：先停止程序A（终端2），再停止程序B（终端1）。
@@ -182,11 +194,13 @@ Unix Domain Socket 路径: /tmp/yolo_image_socket
 **错误**：`ModuleNotFoundError: No module named 'ultralytics'`
 
 **解决**：
+
 ```bash
 pip3 install --user ultralytics opencv-python
 ```
 
 如果还不行，检查 Python 版本：
+
 ```bash
 python3 --version
 # 应该是 Python 3.8 或更高版本
@@ -199,7 +213,9 @@ python3 --version
 **错误**：`无法打开视频文件: /mnt/f/...`
 
 **解决**：
+
 1. 检查视频文件是否存在：
+
    ```bash
    ls -la /mnt/f/Deeplearning/yolo_source8.3.163/ultralytics/datasets/make_dataset/videos/
    ```
@@ -215,6 +231,7 @@ python3 --version
 **错误**：`Connection refused` 或 `No such file or directory`
 
 **解决**：
+
 1. 确保先运行程序B（inference.py），再运行程序A（data_source.py）
 2. 检查 socket 文件：
    ```bash
@@ -283,7 +300,7 @@ source ~/.bashrc
 ```bash
 # 测试 X11 是否可用（如果安装了 x11-apps）
 sudo apt install -y x11-apps
-xeyes  # 应该会弹出眼睛窗口
+xeyes # 应该会弹出眼睛窗口
 
 # 或者测试 OpenCV
 python3 -c "import cv2; cv2.namedWindow('test'); cv2.destroyAllWindows(); print('X11 可用')"
@@ -294,6 +311,7 @@ python3 -c "import cv2; cv2.namedWindow('test'); cv2.destroyAllWindows(); print(
 如果仍然无法连接，需要在 Windows 防火墙中允许 VcXsrv：
 
 在 **Windows PowerShell（管理员）** 中运行：
+
 ```powershell
 New-NetFirewallRule -DisplayName "VcXsrv X11 Server" -Direction Inbound -Program "C:\Program Files\VcXsrv\vcxsrv.exe" -Action Allow
 ```
@@ -312,7 +330,6 @@ export DISPLAY=:0
 
 # 安装必要的库
 
-
 # 运行程序
 python3 inference.py
 ```
@@ -322,10 +339,11 @@ python3 inference.py
 代码已支持自动检测 X11 可用性。只需设置：
 
 ```python
-DISPLAY_MODE = 'auto'  # 在 inference.py 中
+DISPLAY_MODE = "auto"  # 在 inference.py 中
 ```
 
 程序会自动检测：
+
 - 如果 X11 可用 → 显示窗口
 - 如果 X11 不可用 → 自动保存到文件
 
@@ -338,7 +356,9 @@ DISPLAY_MODE = 'auto'  # 在 inference.py 中
 **错误**：`FileNotFoundError: yolo12n.pt`
 
 **解决**：
+
 1. 检查模型文件是否存在：
+
    ```bash
    ls -la /mnt/f/Deeplearning/yolo_source8.3.163/ultralytics/yolo12n.pt
    ```
@@ -354,6 +374,7 @@ DISPLAY_MODE = 'auto'  # 在 inference.py 中
 ### 更改数据源类型
 
 编辑 `data_source.py`，修改：
+
 ```python
 SOURCE_TYPE = "video"  # 改为 "camera" 或 "images"
 ```
@@ -361,6 +382,7 @@ SOURCE_TYPE = "video"  # 改为 "camera" 或 "images"
 ### 更改发送/推理频率
 
 在两个文件中修改：
+
 ```python
 FPS = 10  # 改为其他数字，比如 5（5Hz）或 20（20Hz）
 ```
@@ -368,6 +390,7 @@ FPS = 10  # 改为其他数字，比如 5（5Hz）或 20（20Hz）
 ### 更改视频路径
 
 编辑 `data_source.py`，修改：
+
 ```python
 VIDEO_PATH = "/mnt/f/你的/视频/路径.mp4"
 ```
@@ -392,13 +415,14 @@ VIDEO_PATH = "/mnt/f/你的/视频/路径.mp4"
 ## 🔄 下一步
 
 现在你的系统已经可以：
+
 - ✅ 使用 Unix Domain Socket 进行进程间通信
 - ✅ 程序A持续发送图像数据
 - ✅ 程序B持续接收并推理
 - ✅ 实时显示检测结果
 
 接下来可以：
+
 1. 尝试使用摄像头（修改 `SOURCE_TYPE = "camera"`）
 2. 尝试使用图片文件夹（修改 `SOURCE_TYPE = "images"`）
 3. 接入真实相机（需要配置相机驱动和路径）
-
