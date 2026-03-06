@@ -27,6 +27,7 @@ pip install -r requirements.txt
 ```
 
 或者单独安装：
+
 ```bash
 pip install opencv-python numpy ultralytics pyyaml
 ```
@@ -37,7 +38,7 @@ pip install opencv-python numpy ultralytics pyyaml
 
 ```yaml
 data_source:
-  type: "video"  # 可选: video, camera, images
+  type: "video" # 可选: video, camera, images
   video_path: "你的视频路径.mp4"
   fps: 24
 
@@ -45,7 +46,7 @@ inference:
   model_path: "yolov8n.pt"
   fps: 24
   conf_threshold: 0.3
-  classes: [0]  # 0=人, 1=自行车, 2=汽车 等
+  classes: [0] # 0=人, 1=自行车, 2=汽车 等
 ```
 
 ### 3. 运行系统
@@ -63,11 +64,13 @@ inference:
 #### 方式二：手动启动（Windows/Linux/Mac）
 
 **终端1（数据源）：**
+
 ```bash
 python data_source_shm.py
 ```
 
 **终端2（推理）：**
+
 ```bash
 python inference_shm.py
 ```
@@ -148,7 +151,8 @@ Get-Content logs/app.log -Wait -Tail 20
 
 **问题：** `无法连接到共享内存`
 
-**解决：** 
+**解决：**
+
 - 确保程序A（data_source_shm.py）先启动
 - 检查两个程序的 `SHM_NAME` 配置是否一致
 - 在Linux上，检查 `/dev/shm` 目录权限
@@ -158,6 +162,7 @@ Get-Content logs/app.log -Wait -Tail 20
 **问题：** `无法打开摄像头`
 
 **解决：**
+
 - 检查摄像头是否连接
 - 尝试修改 `camera_index`（0, 1, 2...）
 - Windows上可能需要安装摄像头驱动
@@ -167,6 +172,7 @@ Get-Content logs/app.log -Wait -Tail 20
 **问题：** `ModuleNotFoundError: No module named 'xxx'`
 
 **解决：**
+
 ```bash
 pip install -r requirements.txt
 ```
@@ -187,6 +193,7 @@ pip install -r requirements.txt
 ## 📞 需要帮助？
 
 如果遇到问题，请检查：
+
 1. 日志文件（`logs/` 目录）
 2. 配置文件是否正确
 3. Python依赖是否安装完整
